@@ -7,7 +7,7 @@ import { promiseFrom } from '../../utils/utils';
 
 @Injectable()
 export class RedisCacheService {
-  useCache = true;
+  cacheEnabled = true;
 
   key = {
     empty: 0,
@@ -21,15 +21,13 @@ export class RedisCacheService {
 
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
-  private shouldUseCache(): Promise<boolean> {
+  private useCache(): Promise<boolean> {
     // This should be extended with additional logic that determines if cache should be used (i.e. feature flag)
-    return promiseFrom(this.useCache);
+    return promiseFrom(this.cacheEnabled);
   }
 
   private run(command: Function, fallback: unknown): Promise<any> {
-    return this.shouldUseCache().then((useCache) =>
-      useCache ? command : fallback,
-    );
+    return this.useCache().then((useCache) => (useCache ? command : fallback));
   }
 
   private set(key: string, value: any, ttl?: number): Promise<unknown> {
@@ -63,7 +61,7 @@ export class RedisCacheService {
   }
 
   get(key: string, fn: Function, ttl?: number): Promise<unknown> {
-    return this.shouldUseCache().then((useCache) =>
+    return this.useCache().then((useCache) =>
       useCache
         ? this.redis
             .type(key)
