@@ -11,4 +11,11 @@ const randomValue = (): string => {
   return entropy.string();
 };
 
-export { promiseFrom, randomValue };
+const randomObject = (): any => {
+  return { key: randomValue() };
+};
+
+const randomFunction = () =>
+  Math.random() >= 0.5 ? randomObject() : randomValue();
+
+export { promiseFrom, randomFunction };
