@@ -63,22 +63,20 @@ export class RedisCacheService {
   }
 
   get(key: string, fn: Function, ttl?: number): Promise<unknown> {
-    return this.shouldUseCache().then((useCache) => {
-      if (!useCache) {
-        return promiseFrom(fn());
-      }
-
-      return this.redis
-        .type(key)
-        .then((type) =>
-          type === 'string' ? this.getString(key) : this.getHash(key),
-        )
-        .then((data) =>
-          data === null
-            ? promiseFrom(fn()).then((value) => this.set(key, value, ttl))
-            : data,
-        );
-    });
+    return this.shouldUseCache().then((useCache) =>
+      useCache
+        ? this.redis
+            .type(key)
+            .then((type) =>
+              type === 'string' ? this.getString(key) : this.getHash(key),
+            )
+            .then((data) =>
+              data === null
+                ? promiseFrom(fn()).then((value) => this.set(key, value, ttl))
+                : data,
+            )
+        : promiseFrom(fn()),
+    );
   }
 
   exists(key: string): Promise<boolean> {
