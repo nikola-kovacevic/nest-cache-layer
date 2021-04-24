@@ -13,6 +13,9 @@ npm install
 ## Running the app
 
 ```bash
+# start Redis if you don't have it running
+$ sudo docker run --name redis-container -p 6379:6379 -d redis
+
 # development
 $ npm run start
 
