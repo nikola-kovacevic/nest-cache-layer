@@ -1,38 +1,98 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Injectable } from '@nestjs/common';
 
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 
-/* 
-  This is to ensure we are always working with promises!
-  you can see this SO thread why we are doing it this way 
-  https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is-a-promise/27746324#27746324  
-*/
-const ensurePromise = (fn) => Promise.resolve(fn);
+import { promiseFrom } from '../../utils/utils';
 
 @Injectable()
 export class RedisCacheService {
   useCache = true;
 
+  key = {
+    empty: 0,
+    hash: 'data',
+  };
+
   message = {
     cacheNotUsed: 'Cache is not used!',
+    cacheUnavailable: 'Cache is unavailable!',
   };
 
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
   private shouldUseCache(): Promise<boolean> {
     // This should be extended with additional logic that determines if cache should be used (i.e. feature flag)
-    return Promise.resolve(this.useCache);
+    return promiseFrom(this.useCache);
+  }
+
+  private run(command: Function, fallback: unknown): Promise<any> {
+    return this.shouldUseCache().then((useCache) =>
+      useCache ? command : fallback,
+    );
+  }
+
+  private set(key: string, value: any, ttl?: number): Promise<unknown> {
+    const setFunction =
+      typeof value === 'object'
+        ? this.setHash(key, value)
+        : this.setValue(key, value);
+
+    return setFunction
+      .then(() => ttl && this.run(this.redis.expire(key, ttl), this.key.empty))
+      .then(() => value);
+  }
+
+  private setValue(key: string, value: any): Promise<unknown> {
+    return this.run(this.redis.set(key, value), value);
+  }
+
+  private setHash(key: string, value: any): Promise<unknown> {
+    return this.run(
+      this.redis.hset(key, this.key.hash, JSON.stringify(value)),
+      value,
+    );
+  }
+
+  private getString(key: string): Promise<string> {
+    return this.redis.get(key);
+  }
+
+  private getHash(key: string): Promise<object | Array<any>> {
+    return this.redis.hget(key, this.key.hash).then(JSON.parse);
+  }
+
+  get(key: string, fn: Function, ttl?: number): Promise<unknown> {
+    return this.shouldUseCache().then((useCache) => {
+      if (!useCache) {
+        return promiseFrom(fn());
+      }
+
+      return this.redis
+        .type(key)
+        .then((type) =>
+          type === 'string' ? this.getString(key) : this.getHash(key),
+        )
+        .then((data) =>
+          data === null
+            ? promiseFrom(fn()).then((value) => this.set(key, value, ttl))
+            : data,
+        );
+    });
   }
 
   exists(key: string): Promise<boolean> {
-    return this.shouldUseCache()
-      .then((useCache) => (useCache ? this.redis.exists(key) : 0))
-      .then((exists) => Boolean(exists)); // Conversion happens because Redis client returns 0 or 1
+    // Conversion to boolean happens because Redis client returns 0 or 1
+    return this.run(this.redis.exists(key), this.key.empty).then(
+      (exists) => !!exists,
+    );
   }
 
   clearCache(): Promise<string> {
-    return this.shouldUseCache().then((useCache) =>
-      useCache ? this.redis.flushdb() : this.message.cacheNotUsed,
-    );
+    return this.run(this.redis.flushdb(), this.message.cacheNotUsed);
+  }
+
+  delete(key: string): Promise<string> {
+    return this.run(this.redis.del(key), this.message.cacheNotUsed);
   }
 }
