@@ -9,6 +9,11 @@ import { promiseFrom } from '../../utils/utils';
 export class RedisCacheService {
   cacheEnabled = true;
 
+  type = {
+    object: 'object',
+    string: 'string',
+  };
+
   key = {
     empty: 0,
     hash: 'data',
@@ -32,7 +37,7 @@ export class RedisCacheService {
 
   private set(key: string, value: any, ttl?: number): Promise<unknown> {
     const setFunction =
-      typeof value === 'object'
+      typeof value === this.type.object
         ? this.setHash(key, value)
         : this.setValue(key, value);
 
@@ -66,7 +71,9 @@ export class RedisCacheService {
         ? this.redis
             .type(key)
             .then((type) =>
-              type === 'string' ? this.getString(key) : this.getHash(key),
+              type === this.type.string
+                ? this.getString(key)
+                : this.getHash(key),
             )
             .then((data) =>
               data === null
