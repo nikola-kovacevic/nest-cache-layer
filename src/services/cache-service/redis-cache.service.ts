@@ -88,6 +88,14 @@ export class RedisCacheService {
     return this.run(this.redis.flushdb(), this.message.cacheNotUsed);
   }
 
+  clearKeys(key): Promise<number> {
+    return this.run(this.redis.keys(`*{${key}}*`), []).then(
+      (keysToRemove) =>
+        keysToRemove.length > 0 &&
+        this.run(this.redis.del(...keysToRemove), this.key.empty),
+    );
+  }
+
   delete(key: string): Promise<string> {
     return this.run(this.redis.del(key), this.message.cacheNotUsed);
   }
