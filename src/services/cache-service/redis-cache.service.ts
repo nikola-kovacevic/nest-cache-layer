@@ -58,11 +58,11 @@ export class RedisCacheService {
   }
 
   private getString(key: string): Promise<string> {
-    return this.redis.get(key);
+    return this.run(this.redis.get(key), null);
   }
 
   private getHash(key: string): Promise<object | Array<any>> {
-    return this.redis.hget(key, this.key.hash).then(JSON.parse);
+    return this.run(this.redis.hget(key, this.key.hash).then(JSON.parse), null);
   }
 
   get(key: string, fn: Function, ttl?: number): Promise<unknown> {
