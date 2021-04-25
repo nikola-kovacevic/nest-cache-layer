@@ -18,4 +18,7 @@ const randomObject = (): any => {
 const randomFunction = () =>
   Math.random() >= 0.5 ? randomObject() : randomValue();
 
-export { promiseFrom, randomFunction };
+const slowRandomFunction = () =>
+  new Promise((resolve) => setTimeout(() => resolve(randomFunction()), 5000));
+
+export { promiseFrom, randomFunction, slowRandomFunction };

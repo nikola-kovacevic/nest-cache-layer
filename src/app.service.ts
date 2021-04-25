@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { RedisCacheService } from './services/cache-service/redis-cache.service';
-import { randomFunction } from './utils/utils';
+import { randomFunction, slowRandomFunction } from './utils/utils';
 
 @Injectable()
 export class AppService {
@@ -13,6 +13,10 @@ export class AppService {
 
   get(key: string): Promise<unknown> {
     return this.cache.get(key, randomFunction);
+  }
+
+  getSlow(key: string): Promise<unknown> {
+    return this.cache.get(key, slowRandomFunction);
   }
 
   delete(key: string): Promise<unknown> {
