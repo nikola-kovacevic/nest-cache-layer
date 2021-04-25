@@ -32,5 +32,5 @@ App exposes two GET routes for interacting with the cache:
 
 - `http://localhost:3000/clear-cache` where you can clear Redis cache
 - `http://localhost:3000/item/:id` where you can read immediate random values first generated then from cache
-- `http://localhost:3000/slow-item/:id` on first call it takes 5 secs to get the value, after that it is read from cache without TTl
-- `http://localhost:3000/slow-ttl-item/:id` on first call it takes 5 secs to get the value, after that it is read from cache with 10 sec TTl
+- `http://localhost:3000/slow-item/:id` on first call it takes 5 secs to get the value, after that it is read from cache without TTL
+- `http://localhost:3000/slow-ttl-item/:id` on first call it takes 5 secs to get the value, after that it is read from cache with 10 sec TTL
