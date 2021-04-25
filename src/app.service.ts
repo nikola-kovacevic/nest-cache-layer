@@ -15,8 +15,12 @@ export class AppService {
     return this.cache.get(key, randomFunction);
   }
 
-  getSlow(key: string): Promise<unknown> {
+  slowGet(key: string): Promise<unknown> {
     return this.cache.get(key, slowRandomFunction);
+  }
+
+  slowGetWithTTL(key: string): Promise<unknown> {
+    return this.cache.get(key, slowRandomFunction, 10); // TTL is in seconds
   }
 
   delete(key: string): Promise<unknown> {

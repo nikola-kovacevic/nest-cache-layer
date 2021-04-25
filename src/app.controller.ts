@@ -17,6 +17,11 @@ export class AppController {
 
   @Get('/slow-item/:id')
   findOneSlow(@Param() params): Promise<unknown> {
-    return this.appService.getSlow(params.id);
+    return this.appService.slowGet(params.id);
+  }
+
+  @Get('/slow-ttl-item/:id')
+  findOneSlowWithTTL(@Param() params): Promise<unknown> {
+    return this.appService.slowGetWithTTL(params.id);
   }
 }
