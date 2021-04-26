@@ -28,7 +28,7 @@ $ npm run start:prod
 
 ## Interacting with the app
 
-App exposes two GET routes for interacting with the cache:
+App exposes the following GET routes for interacting with the cache:
 
 - `http://localhost:3000/clear-cache` where you can clear Redis cache
 - `http://localhost:3000/item/:id` where you can read immediate random values first generated then from cache
