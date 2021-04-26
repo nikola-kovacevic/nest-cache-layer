@@ -6,17 +6,19 @@ https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is-a-pro
 */
 const promiseFrom = (value): Promise<any> => Promise.resolve(value);
 
-const randomValue = (): string => {
+const randomString = (): string => {
   const entropy = new Entropy();
   return entropy.string();
 };
 
-const randomObject = (): any => ({ key: randomValue() });
+const randomBool = (): boolean => Math.random() >= 0.5;
 
-const randomFunction = () =>
-  Math.random() >= 0.5 ? randomObject() : randomValue();
+const randomObject = (): any => ({ key: randomString() });
 
-const slowRandomFunction = () =>
+const randomFunction = (): string | any =>
+  randomBool() ? randomObject() : randomString();
+
+const slowRandomFunction = (): Promise<string | any> =>
   new Promise((resolve) => setTimeout(() => resolve(randomFunction()), 5000));
 
 export { promiseFrom, randomFunction, slowRandomFunction };
