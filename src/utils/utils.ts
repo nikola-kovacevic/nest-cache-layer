@@ -11,9 +11,7 @@ const randomValue = (): string => {
   return entropy.string();
 };
 
-const randomObject = (): any => {
-  return { key: randomValue() };
-};
+const randomObject = (): any => ({ key: randomValue() });
 
 const randomFunction = () =>
   Math.random() >= 0.5 ? randomObject() : randomValue();
